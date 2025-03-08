@@ -1,45 +1,149 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LockIn Fitness</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
+            background-color: #1a1a1a;
+            color: #ffffff;
         }
-        .container {
-            text-align: center;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .workout-card {
+            background-color: #2d2d2d;
+            transition: transform 0.2s;
         }
-        h1 {
-            color: #1a73e8;
+        .workout-card:hover {
+            transform: translateY(-5px);
         }
-        .new-feature {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e8f0fe;
-            border-radius: 4px;
-            color: #1967d2;
+        .stat-card {
+            background-color: #3d3d3d;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            background-color: #4d4d4d;
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>LockIn Fitness</h1>
-        <p>Version 1.0.3</p>
-        <p>Your personal fitness companion</p>
-        <div class="new-feature">
-            <strong>New in v1.0.2:</strong>
-            <p>Auto-update system is now available!</p>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-500">LockIn Fitness</h1>
+            <div class="flex items-center space-x-4">
+                <button id="sync-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Sync Data
+                </button>
+                <button id="settings-btn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                    Settings
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card rounded-xl p-6">
+                <h3 class="text-gray-400 mb-2">Weekly Progress</h3>
+                <div class="flex items-center">
+                    <svg class="progress-ring w-16 h-16 mr-4">
+                        <circle class="text-gray-700" stroke-width="5" stroke="currentColor" fill="transparent" r="30" cx="32" cy="32"></circle>
+                        <circle class="text-blue-500" stroke-width="5" stroke="currentColor" fill="transparent" r="30" cx="32" cy="32" stroke-dasharray="188.5" stroke-dashoffset="47.125"></circle>
+                    </svg>
+                    <div>
+                        <p class="text-2xl font-bold">75%</p>
+                        <p class="text-sm text-gray-400">of weekly goal</p>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card rounded-xl p-6">
+                <h3 class="text-gray-400 mb-2">Workouts This Week</h3>
+                <p class="text-3xl font-bold">4</p>
+                <p class="text-sm text-gray-400">2 more to goal</p>
+            </div>
+            <div class="stat-card rounded-xl p-6">
+                <h3 class="text-gray-400 mb-2">Total Minutes</h3>
+                <p class="text-3xl font-bold">180</p>
+                <p class="text-sm text-gray-400">This week</p>
+            </div>
         </div>
+
+        <!-- Workout Section -->
+        <section class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold">Recent Workouts</h2>
+                <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">
+                    New Workout
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Workout Cards -->
+                <div class="workout-card rounded-xl p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold">Upper Body</h3>
+                            <p class="text-gray-400">Today, 10:30 AM</p>
+                        </div>
+                        <span class="bg-blue-500 text-sm px-3 py-1 rounded-full">45 min</span>
+                    </div>
+                    <div class="flex items-center text-gray-400">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>High Intensity</span>
+                    </div>
+                </div>
+                <!-- More workout cards... -->
+            </div>
+        </section>
+
+        <!-- Goals Section -->
+        <section>
+            <h2 class="text-2xl font-semibold mb-6">Current Goals</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="stat-card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">Weekly Workout Goal</h3>
+                    <div class="flex justify-between items-center">
+                        <div class="w-full mr-4">
+                            <div class="h-2 bg-gray-700 rounded-full">
+                                <div class="h-2 bg-blue-500 rounded-full" style="width: 66%"></div>
+                            </div>
+                        </div>
+                        <span class="text-lg font-semibold">4/6</span>
+                    </div>
+                </div>
+                <div class="stat-card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">Monthly Distance Goal</h3>
+                    <div class="flex justify-between items-center">
+                        <div class="w-full mr-4">
+                            <div class="h-2 bg-gray-700 rounded-full">
+                                <div class="h-2 bg-green-500 rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
+                        <span class="text-lg font-semibold">22/50 km</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
+
+    <script>
+        // Add event listeners
+        document.getElementById('sync-btn').addEventListener('click', () => {
+            // Handle sync
+            console.log('Syncing data...');
+        });
+
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            // Handle settings
+            console.log('Opening settings...');
+        });
+    </script>
 </body>
 </html> 

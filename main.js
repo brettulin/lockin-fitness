@@ -7,8 +7,8 @@ const env = require('./config/env');
 // Initialize electron store
 const store = new Store();
 
-let mainWindow;
-let tray;
+let mainWindow = null;
+let tray = null;
 let isQuitting = false;
 
 // Force close any existing instances
@@ -19,54 +19,83 @@ if (!gotTheLock) {
 }
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true
-    },
-    icon: path.join(__dirname, 'assets/icon.ico')
-  });
+  if (mainWindow === null) {
+    mainWindow = new BrowserWindow({
+      width: 1200,
+      height: 800,
+      minWidth: 800,
+      minHeight: 600,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js')
+      },
+      icon: path.join(__dirname, 'assets/icon.ico'),
+      show: false // Don't show until ready
+    });
 
-  mainWindow.loadFile('index.html');
+    mainWindow.loadFile('index.html');
 
-  // Hide window to tray instead of closing
-  mainWindow.on('close', (event) => {
-    if (!isQuitting) {
-      event.preventDefault();
-      mainWindow.hide();
-      return false;
+    // Show window when ready to prevent flashing
+    mainWindow.once('ready-to-show', () => {
+      mainWindow.show();
+    });
+
+    // Handle window close
+    mainWindow.on('close', (event) => {
+      if (!isQuitting) {
+        event.preventDefault();
+        mainWindow.hide();
+        return false;
+      }
+    });
+
+    // Reset mainWindow on close
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+  } else {
+    // If window exists but is hidden, show it
+    if (!mainWindow.isVisible()) {
+      mainWindow.show();
     }
-  });
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+  }
 }
 
 function createTray() {
-  tray = new Tray(path.join(__dirname, 'assets/icon.ico'));
-  const contextMenu = Menu.buildFromTemplate([
-    { 
-      label: 'Open LockIn Fitness',
-      click: () => mainWindow.show()
-    },
-    { type: 'separator' },
-    { 
-      label: 'Check for Updates',
-      click: () => checkForUpdates()
-    },
-    { 
-      label: 'Quit',
-      click: () => {
-        forceQuit();
+  if (tray === null) {
+    tray = new Tray(path.join(__dirname, 'assets/icon.ico'));
+    const contextMenu = Menu.buildFromTemplate([
+      { 
+        label: 'Open LockIn Fitness',
+        click: () => {
+          createWindow();
+        }
+      },
+      { type: 'separator' },
+      { 
+        label: 'Check for Updates',
+        click: () => checkForUpdates()
+      },
+      { 
+        label: 'Quit',
+        click: () => {
+          forceQuit();
+        }
       }
-    }
-  ]);
+    ]);
 
-  tray.setToolTip('LockIn Fitness');
-  tray.setContextMenu(contextMenu);
+    tray.setToolTip('LockIn Fitness');
+    tray.setContextMenu(contextMenu);
 
-  tray.on('click', () => {
-    mainWindow.show();
-  });
+    tray.on('click', () => {
+      createWindow();
+    });
+  }
 }
 
 // Force quit function
@@ -74,9 +103,11 @@ function forceQuit() {
   isQuitting = true;
   if (tray) {
     tray.destroy();
+    tray = null;
   }
   if (mainWindow) {
     mainWindow.destroy();
+    mainWindow = null;
   }
   app.quit();
 }
