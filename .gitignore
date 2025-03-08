@@ -1,6 +1,7 @@
 # Environment files
 .env
 .env.*
+release.ps1
 
 # Build output
 dist/
