@@ -1,0 +1,38 @@
+{
+  "name": "lockin-fitness-desktop",
+  "version": "1.0.0",
+  "description": "LockIn Fitness Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test-env.js && electron test-update.js",
+    "build": "electron-builder",
+    "release": "electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.lockin.fitness",
+    "productName": "LockIn Fitness",
+    "directories": {
+      "output": "dist"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "brettulin",
+      "repo": "lockin-fitness"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "author": "Brett Ulin",
+  "license": "MIT",
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1"
+  }
+} 
