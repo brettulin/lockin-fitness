@@ -1,6 +1,6 @@
 {
   "name": "lockin-fitness-desktop",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "LockIn Fitness Desktop Application",
   "main": "main.js",
   "scripts": {
