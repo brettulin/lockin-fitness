@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, Notification } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, Notification, nativeImage } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 const { autoUpdater } = require('electron-updater');
@@ -18,6 +18,12 @@ if (!gotTheLock) {
   return;
 }
 
+// Create icon
+const createIcon = () => {
+  const iconPath = path.join(__dirname, 'assets', 'images', 'icon.ico');
+  return nativeImage.createFromPath(iconPath);
+};
+
 function createWindow() {
   if (mainWindow === null) {
     mainWindow = new BrowserWindow({
@@ -30,7 +36,7 @@ function createWindow() {
         contextIsolation: true,
         preload: path.join(__dirname, 'preload.js')
       },
-      icon: path.join(__dirname, 'assets/icon.ico'),
+      icon: createIcon(),
       show: false // Don't show until ready
     });
 
@@ -54,6 +60,18 @@ function createWindow() {
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
+
+    // Handle IPC events
+    ipcMain.handle('get-version', () => app.getVersion());
+    ipcMain.on('minimize-window', () => mainWindow.minimize());
+    ipcMain.on('maximize-window', () => {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    });
+    ipcMain.on('close-window', () => mainWindow.close());
   } else {
     // If window exists but is hidden, show it
     if (!mainWindow.isVisible()) {
@@ -68,7 +86,8 @@ function createWindow() {
 
 function createTray() {
   if (tray === null) {
-    tray = new Tray(path.join(__dirname, 'assets/icon.ico'));
+    const icon = createIcon();
+    tray = new Tray(icon);
     const contextMenu = Menu.buildFromTemplate([
       { 
         label: 'Open LockIn Fitness',
@@ -95,6 +114,11 @@ function createTray() {
     tray.on('click', () => {
       createWindow();
     });
+
+    // Set a smaller icon for the tray
+    if (process.platform === 'win32') {
+      tray.setImage(icon.resize({ width: 16, height: 16 }));
+    }
   }
 }
 
@@ -125,34 +149,54 @@ autoUpdater.setFeedURL({
 // Add update event listeners
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for updates...');
+  if (mainWindow) {
+    mainWindow.webContents.send('checking-for-update');
+  }
 });
 
 autoUpdater.on('update-available', (info) => {
   console.log('Update available:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-available', info);
+  }
   new Notification({ 
     title: 'Update Available', 
-    body: `Version ${info.version} is available and will be downloaded automatically.`
+    body: `Version ${info.version} is available and will be downloaded automatically.`,
+    icon: createIcon()
   }).show();
 });
 
 autoUpdater.on('update-not-available', () => {
   console.log('No updates available');
+  if (mainWindow) {
+    mainWindow.webContents.send('update-not-available');
+  }
 });
 
 autoUpdater.on('error', (err) => {
   console.error('Update error:', err.message);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-error', err.message);
+  }
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
   console.log('Download progress:', Math.round(progressObj.percent) + '%');
+  if (mainWindow) {
+    mainWindow.webContents.send('download-progress', progressObj);
+  }
 });
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-downloaded', info);
+  }
   new Notification({ 
     title: 'Update Ready', 
     body: `Version ${info.version} has been downloaded. Click here to install and restart.`,
-    closeButtonText: 'Install Now'
+    closeButtonText: 'Install Now',
+    icon: createIcon()
   }).show();
 });
 
@@ -161,6 +205,9 @@ function checkForUpdates() {
     autoUpdater.checkForUpdates();
   } catch (error) {
     console.error('Error checking for updates:', error);
+    if (mainWindow) {
+      mainWindow.webContents.send('update-error', error.message);
+    }
   }
 }
 
