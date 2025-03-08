@@ -6,21 +6,23 @@ const { execSync } = require('child_process');
 const versionType = process.argv[2] || 'patch';
 
 try {
+    const rootDir = path.join(__dirname, '..');
+    
     // Read current version from package.json
-    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
     const currentVersion = packageJson.version;
     
     // Update version in package.json
     console.log(`Current version: ${currentVersion}`);
-    execSync(`npm version ${versionType} --no-git-tag-version`);
+    execSync(`npm version ${versionType} --no-git-tag-version`, { cwd: rootDir });
     
     // Read new version
-    const updatedPackageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    const updatedPackageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
     const newVersion = updatedPackageJson.version;
     console.log(`New version: ${newVersion}`);
     
     // Update version in index.html
-    const indexPath = path.join(__dirname, '..', 'index.html');
+    const indexPath = path.join(rootDir, 'index.html');
     let indexContent = fs.readFileSync(indexPath, 'utf8');
     indexContent = indexContent.replace(
         /<p>Version .*?<\/p>/,
@@ -30,7 +32,7 @@ try {
     
     // Build the application
     console.log('\nBuilding application...');
-    execSync('npm run build', { stdio: 'inherit' });
+    execSync('npm run build', { stdio: 'inherit', cwd: rootDir });
     
     // Create release notes
     const releaseNotes = `# Version ${newVersion}
@@ -43,7 +45,7 @@ try {
 ## Installation
 Download and run the installer for your platform.`;
     
-    fs.writeFileSync('release-notes.md', releaseNotes);
+    fs.writeFileSync(path.join(rootDir, 'release-notes.md'), releaseNotes);
     console.log('\nRelease notes created: release-notes.md');
     
     console.log('\nRelease preparation complete!');

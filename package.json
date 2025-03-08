@@ -1,6 +1,6 @@
 {
   "name": "lockin-fitness-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "LockIn Fitness Desktop Application",
   "main": "main.js",
   "scripts": {
@@ -35,4 +35,4 @@
     "electron": "^28.2.0",
     "electron-builder": "^24.9.1"
   }
-} 
+}
