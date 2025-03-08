@@ -11,6 +11,13 @@ let mainWindow;
 let tray;
 let isQuitting = false;
 
+// Force close any existing instances
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+  return;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -49,8 +56,7 @@ function createTray() {
     { 
       label: 'Quit',
       click: () => {
-        isQuitting = true;
-        app.quit();
+        forceQuit();
       }
     }
   ]);
@@ -61,6 +67,18 @@ function createTray() {
   tray.on('click', () => {
     mainWindow.show();
   });
+}
+
+// Force quit function
+function forceQuit() {
+  isQuitting = true;
+  if (tray) {
+    tray.destroy();
+  }
+  if (mainWindow) {
+    mainWindow.destroy();
+  }
+  app.quit();
 }
 
 // Configure auto updater
@@ -102,7 +120,8 @@ autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded:', info.version);
   new Notification({ 
     title: 'Update Ready', 
-    body: `Version ${info.version} has been downloaded and will be installed on restart.`
+    body: `Version ${info.version} has been downloaded. Click here to install and restart.`,
+    closeButtonText: 'Install Now'
   }).show();
 });
 
@@ -128,7 +147,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit();
+    forceQuit();
   }
 });
 
@@ -141,4 +160,14 @@ app.on('activate', () => {
 // Clean up on quit
 app.on('before-quit', () => {
   isQuitting = true;
+});
+
+// Handle second instance
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+  }
 }); 
